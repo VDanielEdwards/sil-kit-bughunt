@@ -69,10 +69,12 @@ void VAsioPeer::Shutdown()
 
     {
         std::unique_lock<decltype(_sendingQueueMutex)> lock{_sendingQueueMutex};
-        _sendingQueue.clear();
-    }
 
-    _socket->Shutdown();
+        if (_sendingQueue.empty())
+        {
+            _socket->Shutdown();
+        }
+    }
 }
 
 
@@ -257,6 +259,12 @@ void VAsioPeer::OnAsyncWriteSomeDone(IRawByteStream& stream, size_t bytesTransfe
     {
         _currentSendingBuffer.SliceOff(bytesTransferred);
         WriteSomeAsync();
+        return;
+    }
+
+    if (_isShuttingDown && _sendingQueue.empty())
+    {
+        _socket->Shutdown();
         return;
     }
 
