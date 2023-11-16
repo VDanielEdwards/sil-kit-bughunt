@@ -70,6 +70,9 @@ void VAsioPeer::Shutdown()
     {
         std::unique_lock<decltype(_sendingQueueMutex)> lock{_sendingQueueMutex};
 
+        std::cerr << fmt::format("VAsioPeer::Shutdown ({}): sending queue size = {}", _info.participantName, _sendingQueue.size()) << std::endl;
+        std::cerr << fmt::format("VAsioPeer::Shutdown ({}): sending buffer size = {}", _info.participantName, _currentSendingBuffer.GetSize()) << std::endl;
+
         if (_sendingQueue.empty())
         {
             _socket->Shutdown();
