@@ -59,10 +59,6 @@ runs:
       if: runner.os == 'Windows'
       run: |
         choco install -y ninja
-        choco install -y doxygen.install
-        pip install breathe==4.34.0
-        pip install sphinx==5.1.1
-        pip install sphinx-rtd-theme==1.0.0
       id: setup-host-windows
       shell: powershell
 
@@ -102,37 +98,37 @@ runs:
       run: ctest --preset ${{ inputs.preset-name }} --output-on-failure -R '^(I|T)'
       shell: bash
 
-    - name: stash test reports ${{ inputs.preset-name }}
-      if: ${{ inputs.upload-testlog  == 'true' }}
-      uses: actions/upload-artifact@v3
-      with:
-        name: "${{ inputs.preset-name }}-test-results"
-        path: '_build/**/*gtestresults.xml'
+    # - name: stash test reports ${{ inputs.preset-name }}
+    #   if: ${{ inputs.upload-testlog  == 'true' }}
+    #   uses: actions/upload-artifact@v3
+    #   with:
+    #     name: "${{ inputs.preset-name }}-test-results"
+    #     path: '_build/**/*gtestresults.xml'
 
-    - name: create cmake package for ${{ inputs.preset-name }}
-      if: ${{ inputs.do-package  == 'true' }}
-      id: cmake-package
-      run: |
-        cmake --build --preset ${{ inputs.preset-name }} --target package
-        echo "package-name=$(basename _build/${{inputs.preset-name}}/_CPack_Packages/*/ZIP/SilKit-*-*/)" >> $GITHUB_OUTPUT
-        # keep our original zip, otherwise the execute bits are lost
-        echo "package-path=$(echo _build/${{inputs.preset-name}}/_CPack_Packages/*/ZIP/SilKit-*-*.zip)" >> $GITHUB_OUTPUT
-        echo "symbols-package-name=$(basename _build/${{inputs.preset-name}}/SilKit-*-*-SYMBOLS.zip)" >> $GITHUB_OUTPUT
-        echo "symbols-package-path=$(echo _build/${{inputs.preset-name}}/SilKit-*-*-SYMBOLS.zip)" >> $GITHUB_OUTPUT
-      shell: bash
+    # - name: create cmake package for ${{ inputs.preset-name }}
+    #   if: ${{ inputs.do-package  == 'true' }}
+    #   id: cmake-package
+    #   run: |
+    #     cmake --build --preset ${{ inputs.preset-name }} --target package
+    #     echo "package-name=$(basename _build/${{inputs.preset-name}}/_CPack_Packages/*/ZIP/SilKit-*-*/)" >> $GITHUB_OUTPUT
+    #     # keep our original zip, otherwise the execute bits are lost
+    #     echo "package-path=$(echo _build/${{inputs.preset-name}}/_CPack_Packages/*/ZIP/SilKit-*-*.zip)" >> $GITHUB_OUTPUT
+    #     echo "symbols-package-name=$(basename _build/${{inputs.preset-name}}/SilKit-*-*-SYMBOLS.zip)" >> $GITHUB_OUTPUT
+    #     echo "symbols-package-path=$(echo _build/${{inputs.preset-name}}/SilKit-*-*-SYMBOLS.zip)" >> $GITHUB_OUTPUT
+    #   shell: bash
 
-    - name: upload package ${{ inputs.preset-name }}
-      if: ${{ inputs.do-package  == 'true' }}
-      uses: actions/upload-artifact@v3
-      with:
-        name: ${{ steps.cmake-package.outputs.package-name }}
-        path: ${{ steps.cmake-package.outputs.package-path }}
-        if-no-files-found: 'error'
+    # - name: upload package ${{ inputs.preset-name }}
+    #   if: ${{ inputs.do-package  == 'true' }}
+    #   uses: actions/upload-artifact@v3
+    #   with:
+    #     name: ${{ steps.cmake-package.outputs.package-name }}
+    #     path: ${{ steps.cmake-package.outputs.package-path }}
+    #     if-no-files-found: 'error'
 
-    - name: upload symbols package ${{ inputs.preset-name }}
-      if: ${{ inputs.do-package-symbols  == 'true' }}
-      uses: actions/upload-artifact@v3
-      with:
-        name: ${{ steps.cmake-package.outputs.symbols-package-name }}
-        path: ${{ steps.cmake-package.outputs.symbols-package-path}}
-        if-no-files-found: 'error'
+    # - name: upload symbols package ${{ inputs.preset-name }}
+    #   if: ${{ inputs.do-package-symbols  == 'true' }}
+    #   uses: actions/upload-artifact@v3
+    #   with:
+    #     name: ${{ steps.cmake-package.outputs.symbols-package-name }}
+    #     path: ${{ steps.cmake-package.outputs.symbols-package-path}}
+    #     if-no-files-found: 'error'
