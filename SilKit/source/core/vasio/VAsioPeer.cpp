@@ -258,9 +258,13 @@ void VAsioPeer::OnAsyncWriteSomeDone(IRawByteStream& stream, size_t bytesTransfe
     SILKIT_UNUSED_ARG(stream);
     SILKIT_TRACE_METHOD_(_logger, "({}, {})", static_cast<const void*>(&stream), bytesTransferred);
 
-    if (bytesTransferred < _currentSendingBuffer.GetSize())
+    if (bytesTransferred <= _currentSendingBuffer.GetSize())
     {
         _currentSendingBuffer.SliceOff(bytesTransferred);
+    }
+
+    if (_currentSendingBuffer.GetSize() != 0)
+    {
         WriteSomeAsync();
         return;
     }
