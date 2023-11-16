@@ -60,6 +60,9 @@ VAsioPeer::VAsioPeer(IVAsioPeerListener* listener, IIoContext* ioContext, std::u
 VAsioPeer::~VAsioPeer()
 {
     SILKIT_TRACE_METHOD_(_logger, "()");
+
+    SilKit::Services::Logging::Info(_logger, "VAsioPeer::~VAsioPeer({} -> {}): sending queue size = {}", _info.participantName, _sendingQueue.size());
+    SilKit::Services::Logging::Info(_logger, "VAsioPeer::~VAsioPeer({} -> {}): sending buffer size = {}", _info.participantName, _currentSendingBuffer.GetSize());
 }
 
 
@@ -70,8 +73,8 @@ void VAsioPeer::Shutdown()
     {
         std::unique_lock<decltype(_sendingQueueMutex)> lock{_sendingQueueMutex};
 
-        std::cerr << fmt::format("VAsioPeer::Shutdown ({}): sending queue size = {}", _info.participantName, _sendingQueue.size()) << std::endl;
-        std::cerr << fmt::format("VAsioPeer::Shutdown ({}): sending buffer size = {}", _info.participantName, _currentSendingBuffer.GetSize()) << std::endl;
+        SilKit::Services::Logging::Info(_logger, "VAsioPeer::Shutdown ({} -> {}): sending queue size = {}", _info.participantName, _sendingQueue.size());
+        SilKit::Services::Logging::Info(_logger, "VAsioPeer::Shutdown ({} -> {}): sending buffer size = {}", _info.participantName, _currentSendingBuffer.GetSize());
 
         if (_sendingQueue.empty() && (_currentSendingBuffer.GetSize() == 0))
         {
