@@ -73,7 +73,7 @@ void VAsioPeer::Shutdown()
         std::cerr << fmt::format("VAsioPeer::Shutdown ({}): sending queue size = {}", _info.participantName, _sendingQueue.size()) << std::endl;
         std::cerr << fmt::format("VAsioPeer::Shutdown ({}): sending buffer size = {}", _info.participantName, _currentSendingBuffer.GetSize()) << std::endl;
 
-        if (_sendingQueue.empty() && _currentSendingBuffer.GetSize())
+        if (_sendingQueue.empty() && (_currentSendingBuffer.GetSize() == 0))
         {
             _socket->Shutdown();
         }
