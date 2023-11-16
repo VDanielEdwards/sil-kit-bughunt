@@ -59,10 +59,6 @@ runs:
       if: runner.os == 'Windows'
       run: |
         choco install -y ninja
-        choco install -y doxygen.install
-        pip install breathe==4.34.0
-        pip install sphinx==5.1.1
-        pip install sphinx-rtd-theme==1.0.0
       id: setup-host-windows
       shell: powershell
 
