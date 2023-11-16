@@ -80,14 +80,14 @@ private:
 
     void RunRegistry(const std::string& registryUri)
     {
-        _registry = SilKit::Vendor::Vector::CreateSilKitRegistry(SilKit::Config::MakeEmptyParticipantConfiguration());
+        _registry = SilKit::Vendor::Vector::CreateSilKitRegistry(SilKit::Config::MakeParticipantConfigurationWithLogging(SilKit::Services::Logging::Level::Trace));
         _registry->StartListening(registryUri);
     }
 
     void RunSystemMaster(const std::string& registryUri, std::vector<std::string> requiredParticipantNames)
     {
         _systemMaster.participant = SilKit::CreateParticipantImpl(
-            SilKit::Config::MakeEmptyParticipantConfigurationImpl(), systemMasterName, registryUri);
+            SilKit::Config::MakeParticipantConfigurationWithLoggingImpl(SilKit::Services::Logging::Level::Trace), systemMasterName, registryUri);
 
         auto participantInternal = dynamic_cast<SilKit::Core::IParticipantInternal*>(_systemMaster.participant.get());
         _systemMaster.systemController = participantInternal->GetSystemController();
