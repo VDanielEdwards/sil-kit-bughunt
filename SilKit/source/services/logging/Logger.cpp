@@ -122,6 +122,7 @@ Logger::Logger(const std::string& participantName, Config::Logging config)
             auto stdoutSink = std::make_shared<spdlog::sinks::ansicolor_stdout_sink_mt>();
 #endif
             stdoutSink->set_level(log_level);
+            stdoutSink->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%n] [%l] [%t] %v");
             _logger->sinks().emplace_back(std::move(stdoutSink));
             break;
         }

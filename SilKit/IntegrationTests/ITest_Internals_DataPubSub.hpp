@@ -33,6 +33,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 #include "GetTestPid.hpp"
 #include "IntegrationTestInfrastructure.hpp"
 
+#include <sstream>
+
 #include "fmt/format.h"
 
 using namespace std::chrono_literals;
@@ -47,11 +49,18 @@ const uint32_t defaultNumMsgToPublish = 3;
 class ITest_Internals_DataPubSub : public testing::Test
 {
 protected:
+    static auto CurrentThreadId() -> std::string
+    {
+        std::ostringstream s;
+        s << std::this_thread::get_id();
+        return s.str();
+    }
+
     template <typename T>
     static void LogLine(T&& x)
     {
-        std::cout << fmt::format("# {} #####################################################",
-                                 std::forward<decltype(x)>(x))
+        std::cout << fmt::format("# {} {} #####################################################",
+                                 CurrentThreadId(), std::forward<decltype(x)>(x))
                   << std::endl;
     };
 
@@ -302,6 +311,8 @@ protected:
     // Specific for this test
     void ParticipantThread(PubSubParticipant& participant, const std::string& registryUri, bool sync)
     {
+        LogLine(fmt::format("participant thread for {}", participant.name));
+
         try
         {
             participant.participant = SilKit::CreateParticipantImpl(participant.config, participant.name, registryUri);
