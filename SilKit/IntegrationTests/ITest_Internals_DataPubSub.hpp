@@ -185,7 +185,7 @@ protected:
         PubSubParticipant(const std::string& newName, const std::vector<DataPublisherInfo>& newDataPublishers,
                           const std::vector<DataSubscriberInfo>& newDataSubscribers,
                           std::shared_ptr<SilKit::Config::IParticipantConfiguration> newConfig =
-                              SilKit::Config::MakeEmptyParticipantConfigurationImpl())
+                              SilKit::Config::MakeParticipantConfigurationWithLoggingImpl(SilKit::Services::Logging::Level::Trace))
         {
             config = newConfig;
             name = newName;
@@ -193,7 +193,7 @@ protected:
             dataPublishers = newDataPublishers;
         }
 
-        std::shared_ptr<SilKit::Config::IParticipantConfiguration> config = MakeEmptyParticipantConfigurationImpl();
+        std::shared_ptr<SilKit::Config::IParticipantConfiguration> config = MakeParticipantConfigurationWithLoggingImpl(SilKit::Services::Logging::Level::Trace);
         bool delayedDefaultDataHandler = false;
         std::string name;
         std::vector<DataSubscriberInfo> dataSubscribers;
