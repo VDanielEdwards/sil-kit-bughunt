@@ -733,7 +733,9 @@ TEST_F(ITest_Internals_DataPubSub, test_1pub_1sub_async_rejoin)
     const uint32_t numMsgToPublish = 1;
     const uint32_t numRejoins = 10;
     const uint32_t numMsgToReceive = 1 * numMsgToPublish;
-    
+
+    LogLine("creating publisher");
+
     std::vector<PubSubParticipant> publishers;
     publishers.push_back({"Pub1", {{"PubCtrl1", "TopicA", {"A"}, {}, 1, defaultMsgSize, numMsgToPublish}}, {}});
 
@@ -745,6 +747,9 @@ TEST_F(ITest_Internals_DataPubSub, test_1pub_1sub_async_rejoin)
         // Receive the same blob several times (once from every publisher)
         expectedDataUnordered.emplace_back(std::vector<uint8_t>(defaultMsgSize, 0));
     }
+
+    LogLine("creating subscriber");
+
     subscribers.push_back({"Sub1",
                            {},
                            {{"SubCtrl1",
@@ -756,11 +761,17 @@ TEST_F(ITest_Internals_DataPubSub, test_1pub_1sub_async_rejoin)
                              1,
                              expectedDataUnordered,
                              }}});
-    
+
     auto registryUri = MakeTestRegistryUri();
 
     _testSystem.SetupRegistryAndSystemMaster(registryUri, false, {});
+
+    LogLine("starting subscribers");
+
     RunParticipants(subscribers, registryUri, false);
+
+    LogLine("waiting for participants");
+
     for (auto& s : subscribers)
     {
         s.WaitForCreateParticipant();
@@ -768,25 +779,50 @@ TEST_F(ITest_Internals_DataPubSub, test_1pub_1sub_async_rejoin)
 
     for (uint32_t i = 0; i < numRejoins; i++)
     {
+        LogLine(i);
+
+        LogLine("starting publishers");
+
         // Start publishers
         RunParticipants(publishers, registryUri, false);
+
+        LogLine("waiting for sending to complete");
+
         for (auto& p : publishers)
         {
             p.WaitForAllSent();
         }
+
+        LogLine("joining all participant threads");
+
         // Publishers are done after AllSent, join the thread to destruct and disconnect publishers
         _pubSubThreads.at(_pubSubThreads.size() - 1).join();
+
         if (i < numRejoins - 1)
         {
+            LogLine("destroying publishers");
+
             // Recreate publisher
             publishers.clear();
+
+            LogLine("destroying publishers");
+
             publishers.push_back({"Pub1", {{"PubCtrl1", "TopicA", {"A"}, {}, 1, defaultMsgSize, numMsgToPublish}}, {}});
         }
+
+        LogLine("done with the rejoin iteration");
     }
+
+    LogLine("joining pub-sub threads");
 
     // Subscriber internally waits for receptions
     JoinPubSubThreads();
+
+    LogLine("shutting down the system");
+
     ShutdownSystem();
+
+    LogLine("test over");
 }
 
 } // anonymous namespace

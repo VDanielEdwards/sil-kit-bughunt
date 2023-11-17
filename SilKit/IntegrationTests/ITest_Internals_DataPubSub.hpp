@@ -33,6 +33,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 #include "GetTestPid.hpp"
 #include "IntegrationTestInfrastructure.hpp"
 
+#include "fmt/format.h"
+
 using namespace std::chrono_literals;
 using namespace SilKit;
 using namespace SilKit::Services::Orchestration;
@@ -45,6 +47,14 @@ const uint32_t defaultNumMsgToPublish = 3;
 class ITest_Internals_DataPubSub : public testing::Test
 {
 protected:
+    template <typename T>
+    static void LogLine(T&& x)
+    {
+        std::cout << fmt::format("# {} #####################################################",
+                                 std::forward<decltype(x)>(x))
+                  << std::endl;
+    };
+
     ITest_Internals_DataPubSub() {}
 
     struct DataPublisherInfo
@@ -383,8 +393,12 @@ protected:
             }
             else
             {
+                LogLine("running without time sync");
+
                 if (!participant.dataPublishers.empty())
                 {
+                    LogLine("publishing messages");
+
                     while (std::none_of(participant.dataPublishers.begin(), participant.dataPublishers.end(),
                                         [](const DataPublisherInfo& dp) {
                                             return dp.allSent;
@@ -392,19 +406,28 @@ protected:
                     {
                         publishTask();
                     }
+
+                    LogLine("setting allSendProimse for the participant");
+
                     participant.allSentPromise.set_value();
                 }
 
                 if (!participant.dataSubscribers.empty())
                 {
+                    LogLine("waiting until all messages were received");
+
                     participant.WaitForAllReceived();
                 }
             }
+
+            LogLine("checking expectations on received messages");
 
             for (const auto& ds : participant.dataSubscribers)
             {
                 EXPECT_EQ(ds.receiveMsgCounter, ds.numMsgToReceive);
             }
+
+            LogLine("participant thread done");
         }
         catch (const std::exception& error)
         {
