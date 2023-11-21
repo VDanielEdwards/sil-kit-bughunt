@@ -2,7 +2,7 @@ name: Windows build
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "dev_lin_test_failure" ]
 
 jobs:
   build-win-x64:
