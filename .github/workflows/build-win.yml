@@ -2,7 +2,7 @@ name: Windows build
 
 on:
   push:
-    branches: [ "bug/itest_pubsub_failure" ]
+    branches: [ "main", "bug/*", "dev_**" ]
 
 jobs:
   build-win-x64:
