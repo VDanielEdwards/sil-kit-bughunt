@@ -63,15 +63,18 @@ public:
         _timeOut = std::chrono::nanoseconds::max();
         _action = std::function<void(std::chrono::nanoseconds)>{};
     }
-    void ExecuteAction(std::chrono::nanoseconds now)
+    auto ExecuteAction(std::chrono::nanoseconds now) -> bool
     {
         if (!_isActive || (now < _timeOut))
-            return;
+        {
+            return false;
+        }
 
         auto action = std::move(_action);
         Clear();
         action(now);
-    }
+
+        return true;    }
 
 private:
     bool _isActive = false;
@@ -103,6 +106,16 @@ public:
         _isCyclic = enabled;
     }
 
+    void ExecuteTask(std::chrono::nanoseconds now)
+    {
+        _now = now;
+        if (_timer.ExecuteAction(now))
+        {
+            ScheduleNextTask();
+        }
+    }
+
+private:
     void ScheduleNextTask()
     {
         if(_nextTask == _schedule.end())
@@ -117,13 +130,6 @@ public:
         _timer.Set(_now + currentTask->delay, currentTask->action);
     }
 
-    void ExecuteTask(std::chrono::nanoseconds now)
-    {
-        _now = now;
-        _timer.ExecuteAction(now);
-    }
-
-private:
     struct Task {
         Task(std::chrono::nanoseconds delay, std::function<void(std::chrono::nanoseconds)> action) : delay{delay}, action{action} {}
 
@@ -270,7 +276,6 @@ public:
 
         _result.receivedFrames[frameStatusEvent.status].push_back(frameStatusEvent.frame);
         _result.receiveTimes.push_back(frameStatusEvent.timestamp);
-        schedule.ScheduleNextTask();
     }
 
     void WakeupHandler(ILinController* linController, const LinWakeupEvent& /*wakeupEvent*/)
@@ -313,11 +318,11 @@ public:
         : LinNode(participant, controller, "LinMaster", lifecycleService)
     {
         schedule = {
-            {0ns, [this](std::chrono::nanoseconds now) { SendFrame_16(now); }},
-            {0ns, [this](std::chrono::nanoseconds now) { SendFrame_17(now); }},
-            {0ns, [this](std::chrono::nanoseconds now) { SendFrame_18(now); }},
-            {0ns, [this](std::chrono::nanoseconds now) { SendFrame_19(now); }},
-            {0ns, [this](std::chrono::nanoseconds now) { SendFrame_34(now); }},
+            {15ms, [this](std::chrono::nanoseconds now) { SendFrame_16(now); }},
+            {5ms, [this](std::chrono::nanoseconds now) { SendFrame_17(now); }},
+            {5ms, [this](std::chrono::nanoseconds now) { SendFrame_18(now); }},
+            {5ms, [this](std::chrono::nanoseconds now) { SendFrame_19(now); }},
+            {5ms, [this](std::chrono::nanoseconds now) { SendFrame_34(now); }},
             {5ms, [this](std::chrono::nanoseconds now) { GoToSleep(now); }},
         };
     }
@@ -404,7 +409,6 @@ public:
 
         _result.receivedFrames[frameStatusEvent.status].push_back(frameStatusEvent.frame);
         _result.receiveTimes.push_back(frameStatusEvent.timestamp);
-        schedule.ScheduleNextTask();
     }
 
     void WakeupHandler(ILinController* linController, const LinWakeupEvent& /*wakeupEvent*/)
